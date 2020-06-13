@@ -1,18 +1,23 @@
 import torch
-from torchvision import datasets, transforms
+import torchvision
+from torchvision import transforms, datasets
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import optim
+from torch.utils.tensorboard import SummaryWriter
+
+# Object for writing information to tensorboard
+writer = SummaryWriter('./mnist_example/runs/experiment_1')
 
 # GPU or CPU?
-device = torch.device('cuda') if torch.cuda.is_available else torch.device('cpu')
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 # load data
 transform_comp = transforms.Compose([transforms.ToTensor(), transforms.Normalize(0.5, 0.5)])
-trainset = datasets.MNIST(r'C:\Users\James\Projects\learning-pytorch\mnist_example\mnist', download=False, train=True, transform=transform_comp)
-valset = datasets.MNIST(r'C:\Users\James\Projects\learning-pytorch\mnist_example\mnist', download=False, train=False, transform=transform_comp)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)
-valloader = torch.utils.data.DataLoader(valset, batch_size=64, shuffle=True)
+trainset = datasets.MNIST('./mnist_example', download=False, train=True, transform=transform_comp)
+testset = datasets.MNIST('./mnist_example', download=False, train=False, transform=transform_comp)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True, num_workers=2)
+testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=True, num_workers=2)
 
 # parameters
 num_epochs = 10
@@ -80,6 +85,8 @@ def train():
             # print status
             running_loss += loss.item()
 
+            writer.add_scalar('training loss', running_loss/(i+1), (epoch-1)*len(trainloader) + i+1)
+
             end = '' if i < number_of_training_batches - 1 else '\n'
             print('\rEpoch {} -- loss: {:.4f}'.format(epoch, running_loss/(i+1)), end = end)
 
@@ -94,7 +101,6 @@ def test():
 
 
 
-
 if __name__ == '__main__':
-    # train()
-    test()
+    train()
+    # test()

@@ -1,2 +1,4 @@
 .vscode
 *.pth
+mnist_example/MNIST
+mnist_example/runs

@@ -7,15 +7,15 @@ from torch import optim
 from torch.utils.tensorboard import SummaryWriter
 
 # Object for writing information to tensorboard
-writer = SummaryWriter('./mnist_example/runs/experiment_1')
+writer = SummaryWriter('./runs/experiment_1')
 
 # GPU or CPU?
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 # load data
 transform_comp = transforms.Compose([transforms.ToTensor(), transforms.Normalize(0.5, 0.5)])
-trainset = datasets.MNIST('./mnist_example', download=False, train=True, transform=transform_comp)
-testset = datasets.MNIST('./mnist_example', download=False, train=False, transform=transform_comp)
+trainset = datasets.MNIST('.', download=True, train=True, transform=transform_comp)
+testset = datasets.MNIST('.', download=True, train=False, transform=transform_comp)
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True, num_workers=2)
 testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=True, num_workers=2)
 

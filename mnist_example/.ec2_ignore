@@ -1,2 +1,3 @@
 runs
 MNIST
+mnist_net.pth

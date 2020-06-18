@@ -1,10 +1,13 @@
 import torch
-import torchvision
-from torchvision import transforms, datasets
+from torchvision import transforms
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import optim
 from torch.utils.tensorboard import SummaryWriter
+from torch.utils.data import DataLoader
+
+from dataset_loader import CatsAndDogsDataset
+from transforms import Resize_zero_pad, Windsorise, RandomRotationAboutZ
 
 # Object for writing information to tensorboard
 writer = SummaryWriter('./runs/experiment_1')
@@ -12,29 +15,24 @@ writer = SummaryWriter('./runs/experiment_1')
 # GPU or CPU?
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-# load data
-transform_comp = transforms.Compose([transforms.ToTensor(), transforms.Normalize(0.5, 0.5)])
-trainset = datasets.MNIST('./MNIST', download=True, train=True, transform=transform_comp)
-testset = datasets.MNIST('./MNIST', download=True, train=False, transform=transform_comp)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True, num_workers=2)
-testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=True, num_workers=2)
-
 # parameters
 num_epochs = 10
 lr = 0.001
-model_save_path = './mnist_net.pth'
+model_save_path = './cat_or_dog.pth'
 
 # Define model
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(1, 6, 3, padding=1)
+        # 3 input channels: RGB
+        self.conv1 = nn.Conv2d(3, 6, 3, padding=1)
         self.conv2 = nn.Conv2d(6, 16, 3, padding=1)
         self.pool = nn.MaxPool2d(2)
         self.conv3 = nn.Conv2d(16, 32, 3, padding=1)
-        self.fc1 = nn.Linear(32*14*14, 120)
+        self.fc1 = nn.Linear(32*128*128, 120)
         self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
+        # 2 output nodes - dog or cat?
+        self.fc3 = nn.Linear(84, 2)
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
@@ -53,7 +51,6 @@ class Net(nn.Module):
             num_features *= s
         return num_features
 
-
 # Instantiate network and move to GPU
 net = Net()
 net.to(device)
@@ -63,6 +60,9 @@ criterion = nn.CrossEntropyLoss()
 optimiser = optim.Adam(net.parameters(), lr=lr)
 
 # Training
+transforms_ = transforms.Compose([Resize_zero_pad((256, 256), 1), RandomRotationAboutZ(60, order=1), transforms.ToTensor()])
+dataset = CatsAndDogsDataset('/Users/jamesowler/Projects/learning-pytorch/cats-and-dogs/PetImages', transform= transforms_)
+trainloader = DataLoader(dataset, batch_size=10, shuffle=True, num_workers=4)
 number_of_training_batches = len(trainloader)
 
 def train():
@@ -93,14 +93,4 @@ def train():
     print('Finished Training')
     torch.save(net.state_dict(), model_save_path)
 
-
-def test():
-    net = Net()
-    net.load_state_dict(torch.load(model_save_path))
-    example_output = net(trainloader.dataset[0][0][0][0])
-
-
-
-if __name__ == '__main__':
-    train()
-    # test()
+train()

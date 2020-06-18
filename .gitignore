@@ -1,4 +1,6 @@
 .vscode
+*__pycache__
 *.pth
 mnist_example/MNIST
-mnist_example/runs
+*runs
+cats-and-dogs/PetImages

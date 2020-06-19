@@ -9,8 +9,6 @@ import matplotlib.pyplot as plt
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
-from transforms import Resize_zero_pad, Windsorise, RandomRotationAboutZ
-
 # Ignore warnings
 import warnings
 warnings.filterwarnings("ignore")

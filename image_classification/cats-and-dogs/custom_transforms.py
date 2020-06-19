@@ -1,16 +1,36 @@
 '''
-James Owler
-
-Transforms libary for Pytorch
+Mini transforms libary for Pytorch
 -----------------------------
 - 2D and 3D agnostic
-- Works for 
 
+- Expects all input items to be numpy ndarrys 
+
+Can convert between tensors, ndarrys, and PIL images using torchvision transforms
 '''
 
-from scipy.ndimage import zoom, interpolation, rotate
+from scipy.ndimage import zoom, rotate
 import numpy as np
 
+
+class Normalise:
+    '''
+    Normalisation intensity values between i and j, given an
+    input (i,j)
+
+    Default: (0,1)
+    '''
+    def __init__(self, intensity_range=(0, 1)):
+        self.intensity_range = intensity_range
+
+    def __call__(self, sample: np.ndarray):
+        low = self.intensity_range[0]
+        high = self.intensity_range[1]
+        _min = np.min(sample)
+        _max = np.max(sample)
+        _range = _max - _min
+        x = high - (((high - low) * (_max - sample)) / _range)
+        
+        return x
 
 class Windsorise:
     '''

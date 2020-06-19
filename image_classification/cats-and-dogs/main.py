@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 import numpy as np
 
 from dataset_loader import CatsAndDogsDataset
-from transforms import Resize_zero_pad, Windsorise, RandomRotationAboutZ
+from custom_transforms import Resize_zero_pad, Windsorise, RandomRotationAboutZ, Normalise
 
 # Object for writing information to tensorboard
 writer = SummaryWriter('./runs/experiment_1')
@@ -62,9 +62,9 @@ criterion = nn.CrossEntropyLoss()
 optimiser = optim.Adam(net.parameters(), lr=lr)
 
 # Training
-
 transforms_ = transforms.Compose([
     RandomRotationAboutZ(60, order=1),
+    Normalise(),
     Resize_zero_pad((256, 256), 1),
     transforms.ToTensor()
 ])
@@ -73,7 +73,7 @@ dataset = CatsAndDogsDataset('./image_classification/cats-and-dogs/PetImages', t
 trainloader = DataLoader(dataset,
                          batch_size=batch_size,
                          shuffle=True,
-                         num_workers=16)
+                         num_workers=8)
 number_of_training_batches = len(trainloader)
 
 def train():

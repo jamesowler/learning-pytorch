@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from torch import optim
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
+import numpy as np
 
 from dataset_loader import CatsAndDogsDataset
 from transforms import Resize_zero_pad, Windsorise, RandomRotationAboutZ
@@ -17,6 +18,7 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 
 # parameters
 num_epochs = 10
+batch_size = 32
 lr = 0.001
 model_save_path = './cat_or_dog.pth'
 
@@ -60,9 +62,18 @@ criterion = nn.CrossEntropyLoss()
 optimiser = optim.Adam(net.parameters(), lr=lr)
 
 # Training
-transforms_ = transforms.Compose([Resize_zero_pad((256, 256), 1), RandomRotationAboutZ(60, order=1), transforms.ToTensor()])
-dataset = CatsAndDogsDataset('/Users/jamesowler/Projects/learning-pytorch/cats-and-dogs/PetImages', transform= transforms_)
-trainloader = DataLoader(dataset, batch_size=10, shuffle=True, num_workers=4)
+
+transforms_ = transforms.Compose([
+    RandomRotationAboutZ(60, order=1),
+    Resize_zero_pad((256, 256), 1),
+    transforms.ToTensor()
+])
+
+dataset = CatsAndDogsDataset('./image_classification/cats-and-dogs/PetImages', transform= transforms_)
+trainloader = DataLoader(dataset,
+                         batch_size=batch_size,
+                         shuffle=True,
+                         num_workers=16)
 number_of_training_batches = len(trainloader)
 
 def train():
@@ -78,6 +89,7 @@ def train():
 
             # forward + backward + optmise
             outputs = net(inputs)
+            labels = labels.long()
             loss = criterion(outputs, labels)
             loss.backward()
             optimiser.step()
@@ -88,9 +100,11 @@ def train():
             writer.add_scalar('training loss', running_loss/(i+1), (epoch-1)*len(trainloader) + i+1)
 
             end = '' if i < number_of_training_batches - 1 else '\n'
-            print('\rEpoch {} -- loss: {:.4f}'.format(epoch, running_loss/(i+1)), end = end)
+            print('\rEpoch {} -- {}/{} -- loss: {:.4f}'.format(epoch, i, len(trainloader), running_loss/(i+1)), end = end)
 
     print('Finished Training')
     torch.save(net.state_dict(), model_save_path)
 
-train()
+if __name__ == '__main__':
+    print('Starting training...')
+    train()

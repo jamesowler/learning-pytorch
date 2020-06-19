@@ -3,4 +3,4 @@
 *.pth
 mnist_example/MNIST
 *runs
-cats-and-dogs/PetImages
+*PetImages

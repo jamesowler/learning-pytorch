@@ -85,6 +85,8 @@ class Resize_zero_pad:
 class RandomRotationAboutZ:
     '''
     Rotation range: degrees (0-180)
+
+    Applies a random rotation about the z-axis
     '''
     def __init__(self, rotation_range: float, order=1):
         self.rotation_range = rotation_range
@@ -100,11 +102,3 @@ class RandomRotationAboutZ:
             raise TypeError('Input image must be 3d or 4d array e.g. width, height, channels or width, height, depth, channels')
         
         return x
-
-class RandomRotation:
-    '''
-    Given a nd numpy array:
-    Applies random rotation about the Z axis
-    '''
-    def __init__(self, rotation_range):
-        pass
